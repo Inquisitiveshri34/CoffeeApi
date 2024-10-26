@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Page</title>
+    <style>
+      /* All Your css for Order page goes here  */
+    </style>
+  </head>
+  <body>
+    <div class="nav">
+      <h1>Web Coffee Shop Menu</h1>
+      <a href="./index.html">Home</a>
+      <a href="./order.html">Ordered</a>
+    </div>
+    <h1 id="total">
+      Your total order value is :- <span id="order-total">0</span>
+    </h1>
+    <div id="cupon">
+      <input type="text" />
+      <button>Add Cupon</button>
+    </div>
+    <div id="order-container">
+      <!-- Here Append All the Order Cards here-->
+    </div>
+  </body>
+  <script>
+    
+
+    const url = `https://dbioz2ek0e.execute-api.ap-south-1.amazonaws.com/mockapi/get-coffee`;
+
+    const ordered = document.querySelector("#order-container")
+    const totalValue = document.querySelector("#order-total")
+    totalValue.textContent = 0;
+
+    let showData = (data) => {
+      
+      let totalCost = 0;
+      data.forEach( (dataEl => {
+      // let showDataEle = (dataEl) => {
+      // for (let i = 0; i < data.length; i++){
+        const div = document.createElement("div");
+        // const dataEl = data[i];
+        const image = document.createElement("img");
+        image.setAttribute("src",dataEl.image);
+        image.setAttribute("alt","image");
+        const title = document.createElement("h3");
+        title.textContent = dataEl.title;
+        const pricePara = document.createElement("p")
+        let price = dataEl.price;
+        pricePara.textContent = price;
+        const decQuant = document.createElement("button");
+        decQuant.textContent = '-';
+        decQuant.classList.add("decQuant");
+        decQuant.disabled = true;
+        const quant = document.createElement("p");
+        const quantity = 1;
+        quant.textContent = quantity;
+        quant.classList.add("quantity");
+        const incQuant = document.createElement("button");
+        incQuant.textContent = '+';
+        incQuant.classList.add("incQuant");
+        const cancelBtn = document.createElement("button");
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.classList.add("cancelBtn");
+        cancelBtn.setAttribute('id',dataEl.id);
+        const brk = document.createElement("br");
+        div.appendChild(brk);
+        div.appendChild(image)
+        div.appendChild(title);
+        div.appendChild(pricePara);
+        div.appendChild(decQuant);
+        div.appendChild(quant);
+        div.appendChild(incQuant);
+        div.appendChild(cancelBtn); 
+        ordered.appendChild(div); 
+        totalCost += price*quantity;
+        totalValue.textContent = totalCost;
+
+
+        let changePrice = (quant,price,addOrSub)=> {
+          if (addOrSub === "+"){
+            quant.textContent++;
+            let cost = totalValue.textContent;
+            cost = (couponBtn.disabled) ? Math.floor(Number(cost) + Math.floor(price*70/100)) : Number(cost) + price;
+            totalValue.textContent = Math.floor(cost);
+          } else if (addOrSub === '-') {
+            quant.textContent--;
+            let cost = totalValue.textContent;
+            cost = (couponBtn.disabled) ? Math.floor(Number(cost) - Math.floor(price*70/100)) : Number(cost) - price;
+            totalValue.textContent = Math.floor(cost);
+          }
+        }
+
+
+        incQuant.addEventListener("click", ()=>{
+          if (quant.textContent == 1){
+            changePrice(quant,price,'+');
+            decQuant.disabled = false;
+          } else {
+            changePrice(quant,price,'+');
+          }
+        })
+        decQuant.addEventListener("click",()=>{
+          if (quant.textContent > 2) {
+            changePrice(quant,price,'-');
+          }
+          else {
+            decQuant.disabled = true;
+            changePrice(quant,price,'-');
+          }
+        })
+
+
+        cancelBtn.addEventListener("click",()=>{
+          let arrayOrdered = (localStorage.getItem('key')) ? JSON.parse(localStorage.getItem('key')) : [];
+          let test = (dataelement) => {
+            return dataelement.id == cancelBtn.id;
+          }
+          let indexOfCancelItem = arrayOrdered.findIndex(test);
+          if(indexOfCancelItem != -1){
+            arrayOrdered.splice(indexOfCancelItem,1)
+            price = (couponBtn.disabled) ? Math.floor(price*70/100) : price;
+            let cost = totalValue.textContent;
+            cost = Number(cost) - Math.floor(price * (Number(quant.textContent)));
+            totalValue.textContent = Math.floor(cost);
+            if (arrayOrdered.length === 0){
+              localStorage.clear()
+            } else {
+            localStorage.setItem('key',JSON.stringify(arrayOrdered));
+            }
+            ordered.removeChild(div);
+          }
+        });
+      }));
+
+        const couponInput = document.querySelector("#cupon input")
+        const couponBtn = document.querySelector("#cupon button")
+        couponBtn.addEventListener("click",()=>{
+          if (couponInput.value == 'Diya30'){
+            let cost = totalValue.textContent;
+            cost = (Number(cost) * (70/100));
+            totalValue.textContent = Math.floor(cost);
+            couponInput.disabled = true;
+            couponBtn.disabled = true;
+          }
+        })
+      }
+      
+    
+    let arrayOrdered = (localStorage.getItem('key')) ? JSON.parse(localStorage.getItem('key')) : [];
+    showData(arrayOrdered);
+    
+    // All your JS code for Order Page goes here
+  </script>
+</html>
